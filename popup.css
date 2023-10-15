@@ -1,0 +1,14 @@
+body {
+  width: 200px;
+  padding: 10px;
+}
+
+h1 {
+  text-align: center;
+}
+
+button {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+}
