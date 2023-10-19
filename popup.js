@@ -1,18 +1,16 @@
 document.addEventListener("DOMContentLoaded", function () {
   const includeSubdomainsCheckbox =
     document.getElementById("includeSubdomains");
+  const groupInAllWindowsCheckbox =
+    document.getElementById("groupInAllWindows");
   const domainList = document.getElementById("domainList");
-  const groupTabsCurrentButton = document.getElementById("groupTabsCurrent");
-  const groupTabsAllButton = document.getElementById("groupTabsAll");
 
-  // Get all tabs in the current window
-  function getCurrentWindowTabs(callback) {
-    chrome.tabs.query({ currentWindow: true }, callback);
-  }
-
-  // Get all tabs in all windows
-  function getAllTabs(callback) {
-    chrome.tabs.query({}, callback);
+  // Function to get all tabs based on checkboxes' state
+  function getAllTabsBasedOnCheckboxes(callback) {
+    const queryInfo = groupInAllWindowsCheckbox.checked
+      ? {} // All windows
+      : { currentWindow: true }; // Current window only
+    chrome.tabs.query(queryInfo, callback);
   }
 
   // Group tabs by domain
@@ -21,37 +19,45 @@ document.addEventListener("DOMContentLoaded", function () {
     const includeSubdomains = includeSubdomainsCheckbox.checked;
 
     for (const tab of tabs) {
-      const url = new URL(tab.url);
-      const hostname = includeSubdomains
-        ? url.hostname
-        : url.hostname.split(".").slice(-2).join(".");
+      if (
+        !tab.url.startsWith("chrome-extension://") &&
+        !tab.url.startsWith("chrome://")
+      ) {
+        const url = new URL(tab.url);
+        const hostname = includeSubdomains
+          ? url.hostname
+          : url.hostname.split(".").slice(-2).join(".");
 
-      if (!domains[hostname]) {
-        domains[hostname] = [];
+        if (!domains[hostname]) {
+          domains[hostname] = [];
+        }
+
+        domains[hostname].push(tab.id);
       }
-
-      domains[hostname].push(tab.id);
     }
 
     return domains;
   }
 
-  // Add domain buttons to the popup
-  function renderDomainButtons(domains) {
-    domainList.innerHTML = "";
+  // Function to render domain buttons based on checkboxes' state
+  function renderDomainButtons() {
+    getAllTabsBasedOnCheckboxes((tabs) => {
+      const domains = groupTabs(tabs);
+      domainList.innerHTML = "";
 
-    for (const domain in domains) {
-      const button = document.createElement("button");
-      button.textContent = domain;
-      button.addEventListener("click", () => groupTabsByDomain(domain));
-      domainList.appendChild(button);
-    }
+      for (const domain in domains) {
+        const button = document.createElement("button");
+        button.textContent = domain;
+        button.addEventListener("click", () => groupTabsByDomain(domain));
+        domainList.appendChild(button);
+      }
+    });
   }
 
   // Group tabs by domain
   function groupTabsByDomain(domain) {
     const includeSubdomains = includeSubdomainsCheckbox.checked;
-    getCurrentWindowTabs((tabs) => {
+    getAllTabsBasedOnCheckboxes((tabs) => {
       const tabsToGroup = tabs.filter((tab) => {
         const tabDomain = new URL(tab.url).hostname;
         return includeSubdomains
@@ -62,12 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const tabIds = tabsToGroup.map((tab) => tab.id);
 
       if (tabIds.length > 0) {
-        // chrome.tabs.group({ tabIds: tabIds }, (groupInfo) => {
-        //   chrome.tabGroups.update(groupInfo.id, { title: domain });
-        // });
         chrome.tabs.group({ tabIds: tabIds }, (tabGroupId) => {
-          // Set the group title
-          // chrome.tabGroups.update(tabGroupId, { title: domain });
           chrome.tabGroups.update(tabGroupId, { title: domain }, () => {
             if (chrome.runtime.lastError) {
               console.error(chrome.runtime.lastError);
@@ -78,18 +79,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Event listeners for grouping
-  groupTabsCurrentButton.addEventListener("click", () => {
-    getCurrentWindowTabs((tabs) => {
-      const domains = groupTabs(tabs);
-      renderDomainButtons(domains);
-    });
-  });
+  // Event listeners for checkboxes
+  includeSubdomainsCheckbox.addEventListener("change", renderDomainButtons);
+  groupInAllWindowsCheckbox.addEventListener("change", renderDomainButtons);
 
-  groupTabsAllButton.addEventListener("click", () => {
-    getAllTabs((tabs) => {
-      const domains = groupTabs(tabs);
-      renderDomainButtons(domains);
-    });
-  });
+  // Initial rendering of domain buttons
+  renderDomainButtons();
 });

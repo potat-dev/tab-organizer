@@ -5,13 +5,15 @@
   </head>
   <body>
     <h1>Tab Grouping Extension</h1>
-    <div>
+    <div class="checkbox-row">
       <label for="includeSubdomains">Include Subdomains</label>
       <input type="checkbox" id="includeSubdomains" />
     </div>
+    <div class="checkbox-row">
+      <label for="groupInAllWindows">Group in all windows</label>
+      <input type="checkbox" id="groupInAllWindows" />
+    </div>
     <div id="domainList"></div>
-    <button id="groupTabsCurrent">Group Tabs in Current Window</button>
-    <button id="groupTabsAll">Group Tabs in All Windows</button>
     <script src="popup.js"></script>
   </body>
 </html>
