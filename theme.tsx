@@ -8,7 +8,10 @@ interface Props extends PropsWithChildren<MantineProviderProps> {
 
 export function ThemeProvider({ emotionCache, children, ...props }: Props) {
   return (
-    <MantineProvider emotionCache={emotionCache} {...props}>
+    <MantineProvider
+      theme={{ colorScheme: "dark" }}
+      emotionCache={emotionCache}
+      {...props}>
       {children}
     </MantineProvider>
   )
