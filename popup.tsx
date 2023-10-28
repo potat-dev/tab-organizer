@@ -1,14 +1,52 @@
+import { log } from "console"
 import { Button, Checkbox, Group, Stack, Text } from "@mantine/core"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { ThemeProvider } from "~theme"
 
+enum Settings {
+  IncludeSubdomains = "includeSubdomains",
+  FromAllWindows = "fromAllWindows"
+}
+
 function IndexPopup() {
-  const [data, setData] = useState([
-    "youtube.com",
-    "google.com",
-    "facebook.com"
-  ])
+  const [settings, setSettings] = useState<string[]>([])
+  const [tabGroups, setTabGroups] = useState({})
+
+  function getTabs(): Promise<chrome.tabs.Tab[]> {
+    const queryInfo = settings.includes(Settings.FromAllWindows)
+      ? {} // All windows
+      : { currentWindow: true } // Current window only
+    return chrome.tabs.query(queryInfo)
+  }
+
+  function getTabGroups(tabs: chrome.tabs.Tab[]) {
+    const domains = {}
+    const includeSubdomains = settings.includes(Settings.IncludeSubdomains)
+
+    for (const tab of tabs) {
+      if (
+        tab.url.startsWith("chrome:") ||
+        tab.url.startsWith("chrome-extension://")
+      )
+        continue
+
+      const url = new URL(tab.url)
+      const hostname = includeSubdomains
+        ? url.hostname
+        : url.hostname.split(".").slice(-2).join(".")
+
+      if (!domains[hostname]) domains[hostname] = []
+
+      domains[hostname].push(tab.id)
+    }
+
+    return domains
+  }
+
+  useEffect(() => {
+    getTabs().then((tabs) => setTabGroups(getTabGroups(tabs)))
+  }, [settings])
 
   function ButtonList(props) {
     const { items } = props
@@ -28,14 +66,20 @@ function IndexPopup() {
           Tab organizer ✨
         </Text>
 
-        <Checkbox.Group defaultValue={["react"]} label="Options">
+        <Checkbox.Group label="Options" value={settings} onChange={setSettings}>
           <Group mt="xs">
-            <Checkbox value="subd" label="Include subdomain" />
-            <Checkbox value="allw" label="From all windows" />
+            <Checkbox
+              value={Settings.IncludeSubdomains}
+              label="Include subdomains"
+            />
+            <Checkbox
+              value={Settings.FromAllWindows}
+              label="From all windows"
+            />
           </Group>
         </Checkbox.Group>
 
-        <ButtonList items={data} />
+        <ButtonList items={Object.keys(tabGroups)} />
       </Stack>
     </ThemeProvider>
   )

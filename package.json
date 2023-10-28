@@ -28,6 +28,10 @@
     "typescript": "5.2.2"
   },
   "manifest": {
+    "permissions": [
+      "tabs",
+      "tabGroups"
+    ],
     "host_permissions": [
       "https://*/*"
     ]
