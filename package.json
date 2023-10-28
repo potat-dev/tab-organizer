@@ -1,0 +1,35 @@
+{
+  "name": "tab-organizer",
+  "displayName": "Tab organizer",
+  "version": "0.0.1",
+  "description": "Silly little extension to group tabs by domain",
+  "author": "Cyber Potato <cyberpotato42@gmail.com>",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package"
+  },
+  "dependencies": {
+    "@emotion/react": "11.11.1",
+    "@mantine/core": "6.0.19",
+    "@mantine/hooks": "6.0.19",
+    "plasmo": "0.83.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "7.22.15",
+    "@ianvs/prettier-plugin-sort-imports": "4.1.0",
+    "@types/chrome": "0.0.245",
+    "@types/node": "20.5.9",
+    "@types/react": "18.2.21",
+    "@types/react-dom": "18.2.7",
+    "prettier": "3.0.3",
+    "typescript": "5.2.2"
+  },
+  "manifest": {
+    "host_permissions": [
+      "https://*/*"
+    ]
+  }
+}
