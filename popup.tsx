@@ -1,5 +1,6 @@
 import { log } from "console"
-import { Button, Checkbox, Group, Stack, Text } from "@mantine/core"
+import { Button, Checkbox, Group, ScrollArea, Stack, Text } from "@mantine/core"
+import { it } from "node:test"
 import { useEffect, useState } from "react"
 
 import { ThemeProvider } from "~theme"
@@ -15,8 +16,8 @@ function IndexPopup() {
 
   function getTabs(): Promise<chrome.tabs.Tab[]> {
     const queryInfo = settings.includes(Settings.FromAllWindows)
-      ? {} // All windows
-      : { currentWindow: true } // Current window only
+      ? {}
+      : { currentWindow: true }
     return chrome.tabs.query(queryInfo)
   }
 
@@ -44,14 +45,38 @@ function IndexPopup() {
     return domains
   }
 
+  function groupTabs(domain: string) {
+    const tabsToGroup = tabGroups[domain]
+    chrome.tabs.group({ tabIds: tabsToGroup }).then((tabGroupId) => {
+      chrome.tabGroups.update(tabGroupId, { title: domain }).then(() => {
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError)
+        }
+      })
+    })
+  }
+
   useEffect(() => {
     getTabs().then((tabs) => setTabGroups(getTabGroups(tabs)))
   }, [settings])
 
   function ButtonList(props) {
     const { items } = props
-    const listItems = items.map((item, i) => (
-      <Button variant="default" key={i}>
+
+    const sortedItems = items.sort((a, b) => {
+      const aCount = tabGroups[a] ? tabGroups[a].length : 0
+      const bCount = tabGroups[b] ? tabGroups[b].length : 0
+      return bCount - aCount
+    })
+
+    const listItems = sortedItems.map((item, i) => (
+      <Button
+        key={i}
+        variant="default"
+        onClick={(event) => {
+          event.preventDefault()
+          groupTabs(item)
+        }}>
         {item}
       </Button>
     ))
