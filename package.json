@@ -30,9 +30,6 @@
     "permissions": [
       "tabs",
       "tabGroups"
-    ],
-    "host_permissions": [
-      "https://*/*"
     ]
   }
 }
