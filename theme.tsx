@@ -1,17 +1,17 @@
-import type { EmotionCache, MantineProviderProps } from "@mantine/core"
-import { MantineProvider } from "@mantine/core"
+import type { MantineProviderProps } from "@mantine/core"
+import { createTheme, MantineProvider } from "@mantine/core"
 import type { PropsWithChildren } from "react"
 
-interface Props extends PropsWithChildren<MantineProviderProps> {
-  emotionCache?: EmotionCache
-}
+const theme = createTheme({
+  /** Your theme override here */
+})
 
-export function ThemeProvider({ emotionCache, children, ...props }: Props) {
+export function ThemeProvider({
+  children,
+  ...props
+}: PropsWithChildren<MantineProviderProps>) {
   return (
-    <MantineProvider
-      theme={{ colorScheme: "dark" }}
-      emotionCache={emotionCache}
-      {...props}>
+    <MantineProvider theme={theme} defaultColorScheme="dark" {...props}>
       {children}
     </MantineProvider>
   )

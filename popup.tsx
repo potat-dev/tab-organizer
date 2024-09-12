@@ -1,9 +1,9 @@
-import { log } from "console"
-import { Button, Checkbox, Group, ScrollArea, Stack, Text } from "@mantine/core"
-import { it } from "node:test"
+import { Button, Checkbox, Group, Stack, Text } from "@mantine/core"
 import { useEffect, useState } from "react"
 
 import { ThemeProvider } from "~theme"
+
+import "@mantine/core/styles.css"
 
 enum Settings {
   IncludeSubdomains = "includeSubdomains",
